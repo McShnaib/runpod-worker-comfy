@@ -7,6 +7,7 @@ import time
 import os
 import requests
 import base64
+import random
 from io import BytesIO
 
 # Time to wait between API check attempts in milliseconds
@@ -22,6 +23,764 @@ COMFY_HOST = "127.0.0.1:8188"
 # Enforce a clean state after each job is done
 # see https://docs.runpod.io/docs/handler-additional-controls#refresh-worker
 REFRESH_WORKER = os.environ.get("REFRESH_WORKER", "false").lower() == "true"
+
+# Workflow template - this will be dynamically populated with user parameters
+WORKFLOW_TEMPLATE = {
+    "1": {
+        "inputs": {
+            "image": "INPUT_IMAGE_FILENAME"
+        },
+        "class_type": "LoadImage",
+        "_meta": {
+            "title": "Load Image"
+        }
+    },
+    "7": {
+        "inputs": {
+            "width": "INPUT_WIDTH",
+            "height": "INPUT_HEIGHT",
+            "upscale_factor": 1
+        },
+        "class_type": "CR Image Size",
+        "_meta": {
+            "title": "Image Size (width and height Parameters)"
+        }
+    },
+    "40": {
+        "inputs": {
+            "channel": "red",
+            "image": [
+                "613",
+                0
+            ]
+        },
+        "class_type": "Image Select Channel",
+        "_meta": {
+            "title": "Image Select Channel"
+        }
+    },
+    "97": {
+        "inputs": {
+            "width": [
+                "7",
+                0
+            ],
+            "height": [
+                "7",
+                1
+            ],
+            "interpolation": "lanczos",
+            "method": "pad",
+            "condition": "always",
+            "multiple_of": 0
+        },
+        "class_type": "ImageResize+",
+        "_meta": {
+            "title": "🔧 Image Resize (Image parameter)"
+        }
+    },
+    "98": {
+        "inputs": {
+            "blur_radius": 30,
+            "sigma": 1,
+            "image": [
+                "40",
+                0
+            ]
+        },
+        "class_type": "ImageBlur",
+        "_meta": {
+            "title": "Image Blur"
+        }
+    },
+    "294": {
+        "inputs": {
+            "exposure": 3,
+            "image": [
+                "827",
+                0
+            ]
+        },
+        "class_type": "LayerColor: Exposure",
+        "_meta": {
+            "title": "LayerColor: Exposure"
+        }
+    },
+    "333": {
+        "inputs": {
+            "expand": -1,
+            "incremental_expandrate": 0,
+            "tapered_corners": True,
+            "flip_input": False,
+            "blur_radius": 1,
+            "lerp_alpha": 1,
+            "decay_factor": 1,
+            "fill_holes": False,
+            "mask": [
+                "360",
+                1
+            ]
+        },
+        "class_type": "GrowMaskWithBlur",
+        "_meta": {
+            "title": "Grow Mask With Blur"
+        }
+    },
+    "344": {
+        "inputs": {
+            "images": [
+                "98",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "360": {
+        "inputs": {
+            "invert_mask": False,
+            "blend_mode": "normal",
+            "opacity": 100,
+            "x_percent": [
+                "784",
+                0
+            ],
+            "y_percent": [
+                "785",
+                0
+            ],
+            "mirror": "None",
+            "scale": [
+                "786",
+                0
+            ],
+            "aspect_ratio": 1,
+            "rotate": 0,
+            "transform_method": "lanczos",
+            "anti_aliasing": 0,
+            "background_image": [
+                "610",
+                0
+            ],
+            "layer_image": [
+                "294",
+                0
+            ]
+        },
+        "class_type": "LayerUtility: ImageBlendAdvance V2",
+        "_meta": {
+            "title": "LayerUtility: ImageBlendAdvance V2"
+        }
+    },
+    "486": {
+        "inputs": {
+            "mask": [
+                "333",
+                0
+            ]
+        },
+        "class_type": "LayerMask: MaskPreview",
+        "_meta": {
+            "title": "LayerMask: MaskPreview"
+        }
+    },
+    "565": {
+        "inputs": {
+            "images": [
+                "294",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "583": {
+        "inputs": {
+            "text": "INPUT_PROMPT"
+        },
+        "class_type": "CR Text",
+        "_meta": {
+            "title": "🔤 CR Text (prompt parameter)"
+        }
+    },
+    "593": {
+        "inputs": {
+            "ckpt_name": "juggernautXL_v9Rdphoto2Lightning.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple",
+        "_meta": {
+            "title": "Load Checkpoint"
+        }
+    },
+    "594": {
+        "inputs": {
+            "lora_name": "MJ52_v2.0.safetensors",
+            "strength_model": 0.2,
+            "strength_clip": 1,
+            "model": [
+                "593",
+                0
+            ],
+            "clip": [
+                "593",
+                1
+            ]
+        },
+        "class_type": "LoraLoader",
+        "_meta": {
+            "title": "Load LoRA"
+        }
+    },
+    "595": {
+        "inputs": {
+            "text": [
+                "583",
+                0
+            ],
+            "clip": [
+                "594",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "CLIP Text Encode (Prompt)"
+        }
+    },
+    "597": {
+        "inputs": {
+            "seed": "RANDOM_SEED",
+            "steps": 6,
+            "cfg": 2,
+            "sampler_name": "dpmpp_sde",
+            "scheduler": "karras",
+            "denoise": 1,
+            "model": [
+                "594",
+                0
+            ],
+            "positive": [
+                "599",
+                0
+            ],
+            "negative": [
+                "599",
+                1
+            ],
+            "latent_image": [
+                "606",
+                0
+            ]
+        },
+        "class_type": "KSampler",
+        "_meta": {
+            "title": "KSampler"
+        }
+    },
+    "598": {
+        "inputs": {
+            "text": "",
+            "clip": [
+                "593",
+                1
+            ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+            "title": "CLIP Text Encode (Prompt)"
+        }
+    },
+    "599": {
+        "inputs": {
+            "strength": 0.5,
+            "start_percent": 0,
+            "end_percent": 1,
+            "positive": [
+                "595",
+                0
+            ],
+            "negative": [
+                "598",
+                0
+            ],
+            "control_net": [
+                "600",
+                0
+            ],
+            "image": [
+                "602",
+                0
+            ]
+        },
+        "class_type": "ControlNetApplyAdvanced",
+        "_meta": {
+            "title": "Apply ControlNet"
+        }
+    },
+    "600": {
+        "inputs": {
+            "control_net_name": "SDXL/controlnet-canny-sdxl-1.0/diffusion_pytorch_model_V2.safetensors"
+        },
+        "class_type": "ControlNetLoader",
+        "_meta": {
+            "title": "Load ControlNet Model"
+        }
+    },
+    "602": {
+        "inputs": {
+            "low_threshold": 100,
+            "high_threshold": 200,
+            "resolution": 1024,
+            "image": [
+                "661",
+                0
+            ]
+        },
+        "class_type": "CannyEdgePreprocessor",
+        "_meta": {
+            "title": "Canny Edge"
+        }
+    },
+    "603": {
+        "inputs": {
+            "images": [
+                "602",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "604": {
+        "inputs": {
+            "samples": [
+                "597",
+                0
+            ],
+            "vae": [
+                "593",
+                2
+            ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+            "title": "VAE Decode"
+        }
+    },
+    "605": {
+        "inputs": {
+            "images": [
+                "604",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "606": {
+        "inputs": {
+            "pixels": [
+                "661",
+                0
+            ],
+            "vae": [
+                "593",
+                2
+            ]
+        },
+        "class_type": "VAEEncode",
+        "_meta": {
+            "title": "VAE Encode"
+        }
+    },
+    "610": {
+        "inputs": {
+            "Input": [
+                "632",
+                0
+            ],
+            "image2": [
+                "627",
+                0
+            ]
+        },
+        "class_type": "CR Image Input Switch",
+        "_meta": {
+            "title": "🔀 CR Image Input Switch"
+        }
+    },
+    "613": {
+        "inputs": {
+            "Input": [
+                "632",
+                0
+            ],
+            "image1": [
+                "360",
+                0
+            ],
+            "image2": [
+                "740",
+                0
+            ]
+        },
+        "class_type": "CR Image Input Switch",
+        "_meta": {
+            "title": "🔀 CR Image Input Switch"
+        }
+    },
+    "627": {
+        "inputs": {
+            "width": [
+                "7",
+                0
+            ],
+            "height": [
+                "7",
+                1
+            ],
+            "red": 80,
+            "green": 80,
+            "blue": 80
+        },
+        "class_type": "Image Blank",
+        "_meta": {
+            "title": "Image Blank"
+        }
+    },
+    "629": {
+        "inputs": {
+            "boolean": False
+        },
+        "class_type": "Logic Boolean Primitive",
+        "_meta": {
+            "title": "Use Background Image/使用背景图"
+        }
+    },
+    "632": {
+        "inputs": {
+            "value_if_true": 1,
+            "value_if_false": 2,
+            "boolean": [
+                "629",
+                0
+            ]
+        },
+        "class_type": "CR Set Value On Boolean",
+        "_meta": {
+            "title": "⚙️ CR Set Value On Boolean"
+        }
+    },
+    "649": {
+        "inputs": {
+            "boolean": False
+        },
+        "class_type": "Logic Boolean Primitive",
+        "_meta": {
+            "title": "Repaint/重绘"
+        }
+    },
+    "650": {
+        "inputs": {
+            "value_if_true": 1,
+            "value_if_false": 2,
+            "boolean": [
+                "649",
+                0
+            ]
+        },
+        "class_type": "CR Set Value On Boolean",
+        "_meta": {
+            "title": "⚙️ CR Set Value On Boolean"
+        }
+    },
+    "661": {
+        "inputs": {
+            "x": 0,
+            "y": 0,
+            "resize_source": False,
+            "destination": [
+                "627",
+                0
+            ],
+            "source": [
+                "360",
+                0
+            ],
+            "mask": [
+                "360",
+                1
+            ]
+        },
+        "class_type": "ImageCompositeMasked",
+        "_meta": {
+            "title": "ImageCompositeMasked"
+        }
+    },
+    "709": {
+        "inputs": {
+            "images": [
+                "661",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "740": {
+        "inputs": {
+            "x": 0,
+            "y": 0,
+            "resize_source": False,
+            "destination": [
+                "776",
+                0
+            ],
+            "source": [
+                "661",
+                0
+            ],
+            "mask": [
+                "333",
+                0
+            ]
+        },
+        "class_type": "ImageCompositeMasked",
+        "_meta": {
+            "title": "ImageCompositeMasked (Final image output)"
+        }
+    },
+    "741": {
+        "inputs": {
+            "images": [
+                "740",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "776": {
+        "inputs": {
+            "mask_threshold": 250,
+            "gaussblur_radius": 8,
+            "invert_mask": False,
+            "images": [
+                "604",
+                0
+            ],
+            "masks": [
+                "799",
+                0
+            ]
+        },
+        "class_type": "LamaRemover",
+        "_meta": {
+            "title": "Big lama Remover"
+        }
+    },
+    "779": {
+        "inputs": {
+            "images": [
+                "776",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "784": {
+        "inputs": {
+            "number": 50.095,
+            "min_value": 0,
+            "max_value": 100,
+            "step": 0.1
+        },
+        "class_type": "FloatSlider",
+        "_meta": {
+            "title": "x_percent"
+        }
+    },
+    "785": {
+        "inputs": {
+            "number": 50.236000000000004,
+            "min_value": 0,
+            "max_value": 100,
+            "step": 0.1
+        },
+        "class_type": "FloatSlider",
+        "_meta": {
+            "title": "y_percent"
+        }
+    },
+    "786": {
+        "inputs": {
+            "number": 1,
+            "min_value": 0,
+            "max_value": 1,
+            "step": 0.001
+        },
+        "class_type": "FloatSlider",
+        "_meta": {
+            "title": "scale"
+        }
+    },
+    "797": {
+        "inputs": {
+            "images": [
+                "360",
+                0
+            ]
+        },
+        "class_type": "PreviewImage",
+        "_meta": {
+            "title": "Preview Image"
+        }
+    },
+    "799": {
+        "inputs": {
+            "expand": 10,
+            "incremental_expandrate": 0,
+            "tapered_corners": True,
+            "flip_input": False,
+            "blur_radius": 0,
+            "lerp_alpha": 1,
+            "decay_factor": 1,
+            "fill_holes": False,
+            "mask": [
+                "333",
+                0
+            ]
+        },
+        "class_type": "GrowMaskWithBlur",
+        "_meta": {
+            "title": "Grow Mask With Blur"
+        }
+    },
+    "800": {
+        "inputs": {
+            "mask": [
+                "799",
+                0
+            ]
+        },
+        "class_type": "LayerMask: MaskPreview",
+        "_meta": {
+            "title": "LayerMask: MaskPreview"
+        }
+    },
+    "827": {
+        "inputs": {
+            "model": "ZhengPeng7/BiRefNet",
+            "load_local_model": False,
+            "background_color_name": "transparency",
+            "device": "auto",
+            "image": [
+                "97",
+                0
+            ]
+        },
+        "class_type": "BiRefNet_Hugo",
+        "_meta": {
+            "title": "🔥BiRefNet"
+        }
+    },
+    "836": {
+        "inputs": {
+            "brightness": 1.2,
+            "contrast": 1,
+            "saturation": 1,
+            "image": [
+                "98",
+                0
+            ]
+        },
+        "class_type": "LayerColor: Brightness & Contrast",
+        "_meta": {
+            "title": "LayerColor: Brightness & Contrast"
+        }
+    }
+}
+
+
+def construct_workflow(prompt, height, width, filename):
+    """
+    Constructs the ComfyUI workflow by replacing placeholders with actual values.
+    
+    Args:
+        prompt (str): The text prompt for image generation
+        height (int): The height of the output image
+        width (int): The width of the output image
+        filename (str): The filename of the input image
+        
+    Returns:
+        dict: The constructed workflow with all placeholders replaced
+    """
+    import copy
+    
+    # Deep copy the template to avoid modifying the original
+    workflow = copy.deepcopy(WORKFLOW_TEMPLATE)
+    
+    # Replace prompt in node 583
+    workflow["583"]["inputs"]["text"] = prompt
+    
+    # Replace width and height in node 7
+    workflow["7"]["inputs"]["width"] = width
+    workflow["7"]["inputs"]["height"] = height
+    
+    # Replace filename in node 1 (LoadImage)
+    workflow["1"]["inputs"]["image"] = filename
+    
+    # Generate random seed for node 597
+    random_seed = random.randint(1, 999999999999999)
+    workflow["597"]["inputs"]["seed"] = random_seed
+    
+    return workflow
+
+
+def download_image_from_s3(image_url):
+    """
+    Downloads an image from S3 URL and converts it to base64.
+    
+    Args:
+        image_url (str): The S3 URL of the image to download
+        
+    Returns:
+        tuple: (filename, base64_image_data) or (None, error_message)
+    """
+    try:
+        # Download the image from S3
+        response = requests.get(image_url, timeout=30)
+        response.raise_for_status()
+        
+        # Get the filename from the URL
+        filename = image_url.split('/')[-1]
+        if not filename or '.' not in filename:
+            filename = f"input_image_{int(time.time())}.jpg"
+        
+        # Convert to base64
+        image_data = base64.b64encode(response.content).decode('utf-8')
+        
+        return filename, image_data
+        
+    except requests.RequestException as e:
+        return None, f"Failed to download image from S3: {str(e)}"
+    except Exception as e:
+        return None, f"Error processing image: {str(e)}"
 
 
 def validate_input(job_input):
@@ -46,24 +805,43 @@ def validate_input(job_input):
         except json.JSONDecodeError:
             return None, "Invalid JSON format in input"
 
-    # Validate 'workflow' in input
-    workflow = job_input.get("workflow")
-    if workflow is None:
-        return None, "Missing 'workflow' parameter"
-
-    # Validate 'images' in input, if provided
-    images = job_input.get("images")
-    if images is not None:
-        if not isinstance(images, list) or not all(
-            "name" in image and "image" in image for image in images
-        ):
-            return (
-                None,
-                "'images' must be a list of objects with 'name' and 'image' keys",
-            )
+    # Validate required parameters
+    prompt = job_input.get("prompt")
+    if prompt is None:
+        return None, "Missing 'prompt' parameter"
+    
+    height = job_input.get("height")
+    if height is None:
+        return None, "Missing 'height' parameter"
+    
+    width = job_input.get("width")
+    if width is None:
+        return None, "Missing 'width' parameter"
+    
+    image_url = job_input.get("image_url")
+    if image_url is None:
+        return None, "Missing 'image_url' parameter"
+    
+    # Validate data types
+    if not isinstance(prompt, str):
+        return None, "'prompt' must be a string"
+    
+    if not isinstance(height, (int, float)) or height <= 0:
+        return None, "'height' must be a positive number"
+    
+    if not isinstance(width, (int, float)) or width <= 0:
+        return None, "'width' must be a positive number"
+    
+    if not isinstance(image_url, str):
+        return None, "'image_url' must be a string"
 
     # Return validated data and no error
-    return {"workflow": workflow, "images": images}, None
+    return {
+        "prompt": prompt,
+        "height": int(height),
+        "width": int(width),
+        "image_url": image_url
+    }, None
 
 
 def check_server(url, retries=500, delay=50):
@@ -277,8 +1055,8 @@ def handler(job):
     """
     The main function that handles a job of generating an image.
 
-    This function validates the input, sends a prompt to ComfyUI for processing,
-    polls ComfyUI for result, and retrieves generated images.
+    This function validates the input, downloads the image from S3, constructs the workflow,
+    sends a prompt to ComfyUI for processing, polls ComfyUI for result, and retrieves generated images.
 
     Args:
         job (dict): A dictionary containing job details and input parameters.
@@ -294,8 +1072,15 @@ def handler(job):
         return {"error": error_message}
 
     # Extract validated data
-    workflow = validated_data["workflow"]
-    images = validated_data.get("images")
+    prompt = validated_data["prompt"]
+    height = validated_data["height"]
+    width = validated_data["width"]
+    image_url = validated_data["image_url"]
+
+    # Download image from S3
+    filename, image_data = download_image_from_s3(image_url)
+    if filename is None:
+        return {"error": f"Failed to download image from S3: {image_data}"}
 
     # Make sure that the ComfyUI API is available
     check_server(
@@ -304,11 +1089,13 @@ def handler(job):
         COMFY_API_AVAILABLE_INTERVAL_MS,
     )
 
-    # Upload images if they exist
-    upload_result = upload_images(images)
-
+    # Upload the downloaded image to ComfyUI
+    upload_result = upload_images([{"name": filename, "image": image_data}])
     if upload_result["status"] == "error":
         return upload_result
+
+    # Construct the workflow with user parameters
+    workflow = construct_workflow(prompt, height, width, filename)
 
     # Queue the workflow
     try:

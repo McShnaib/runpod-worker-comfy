@@ -1,0 +1,690 @@
+{
+  "1": {
+    "inputs": {
+      "image": "31IeOTlng0S.jpg_BO30,255,255,255_UF900,850_SR1910,1000,0,C_QL100_.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "7": {
+    "inputs": {
+      "width": 1600,
+      "height": 904,
+      "upscale_factor": 1
+    },
+    "class_type": "CR Image Size",
+    "_meta": {
+      "title": "Image Size (width and height Parameters)"
+    }
+  },
+  "40": {
+    "inputs": {
+      "channel": "red",
+      "image": [
+        "613",
+        0
+      ]
+    },
+    "class_type": "Image Select Channel",
+    "_meta": {
+      "title": "Image Select Channel"
+    }
+  },
+  "97": {
+    "inputs": {
+      "width": [
+        "7",
+        0
+      ],
+      "height": [
+        "7",
+        1
+      ],
+      "interpolation": "lanczos",
+      "method": "pad",
+      "condition": "always",
+      "multiple_of": 0
+    },
+    "class_type": "ImageResize+",
+    "_meta": {
+      "title": "🔧 Image Resize (Image parameter)"
+    }
+  },
+  "98": {
+    "inputs": {
+      "blur_radius": 30,
+      "sigma": 1,
+      "image": [
+        "40",
+        0
+      ]
+    },
+    "class_type": "ImageBlur",
+    "_meta": {
+      "title": "Image Blur"
+    }
+  },
+  "294": {
+    "inputs": {
+      "exposure": 3,
+      "image": [
+        "827",
+        0
+      ]
+    },
+    "class_type": "LayerColor: Exposure",
+    "_meta": {
+      "title": "LayerColor: Exposure"
+    }
+  },
+  "333": {
+    "inputs": {
+      "expand": -1,
+      "incremental_expandrate": 0,
+      "tapered_corners": true,
+      "flip_input": false,
+      "blur_radius": 1,
+      "lerp_alpha": 1,
+      "decay_factor": 1,
+      "fill_holes": false,
+      "mask": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "GrowMaskWithBlur",
+    "_meta": {
+      "title": "Grow Mask With Blur"
+    }
+  },
+  "344": {
+    "inputs": {
+      "images": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "360": {
+    "inputs": {
+      "invert_mask": false,
+      "blend_mode": "normal",
+      "opacity": 100,
+      "x_percent": [
+        "784",
+        0
+      ],
+      "y_percent": [
+        "785",
+        0
+      ],
+      "mirror": "None",
+      "scale": [
+        "786",
+        0
+      ],
+      "aspect_ratio": 1,
+      "rotate": 0,
+      "transform_method": "lanczos",
+      "anti_aliasing": 0,
+      "background_image": [
+        "610",
+        0
+      ],
+      "layer_image": [
+        "294",
+        0
+      ]
+    },
+    "class_type": "LayerUtility: ImageBlendAdvance V2",
+    "_meta": {
+      "title": "LayerUtility: ImageBlendAdvance V2"
+    }
+  },
+  "486": {
+    "inputs": {
+      "mask": [
+        "333",
+        0
+      ]
+    },
+    "class_type": "LayerMask: MaskPreview",
+    "_meta": {
+      "title": "LayerMask: MaskPreview"
+    }
+  },
+  "565": {
+    "inputs": {
+      "images": [
+        "294",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "583": {
+    "inputs": {
+      "text": "Photorealistic shot of the DILI strawberry juice bottle sitting on a rustic wooden crate in the middle of a sun-drenched strawberry field. Fresh, ripe red strawberries are visible on the green plants surrounding the crate. The background is softly blurred, and golden sunlight filters through the leaves, creating a warm and inviting atmosphere. The scene feels natural, vibrant, and wholesome."
+    },
+    "class_type": "CR Text",
+    "_meta": {
+      "title": "🔤 CR Text (prompt parameter)"
+    }
+  },
+  "593": {
+    "inputs": {
+      "ckpt_name": "juggernautXL_v9Rdphoto2Lightning.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "594": {
+    "inputs": {
+      "lora_name": "MJ52_v2.0.safetensors",
+      "strength_model": 0.2,
+      "strength_clip": 1,
+      "model": [
+        "593",
+        0
+      ],
+      "clip": [
+        "593",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "595": {
+    "inputs": {
+      "text": [
+        "583",
+        0
+      ],
+      "clip": [
+        "594",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "597": {
+    "inputs": {
+      "seed": 373441734090376,
+      "steps": 6,
+      "cfg": 2,
+      "sampler_name": "dpmpp_sde",
+      "scheduler": "karras",
+      "denoise": 1,
+      "model": [
+        "594",
+        0
+      ],
+      "positive": [
+        "599",
+        0
+      ],
+      "negative": [
+        "599",
+        1
+      ],
+      "latent_image": [
+        "606",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "598": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "593",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "599": {
+    "inputs": {
+      "strength": 0.5,
+      "start_percent": 0,
+      "end_percent": 1,
+      "positive": [
+        "595",
+        0
+      ],
+      "negative": [
+        "598",
+        0
+      ],
+      "control_net": [
+        "600",
+        0
+      ],
+      "image": [
+        "602",
+        0
+      ]
+    },
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Apply ControlNet"
+    }
+  },
+  "600": {
+    "inputs": {
+      "control_net_name": "SDXL/controlnet-canny-sdxl-1.0/diffusion_pytorch_model_V2.safetensors"
+    },
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "Load ControlNet Model"
+    }
+  },
+  "602": {
+    "inputs": {
+      "low_threshold": 100,
+      "high_threshold": 200,
+      "resolution": 1024,
+      "image": [
+        "661",
+        0
+      ]
+    },
+    "class_type": "CannyEdgePreprocessor",
+    "_meta": {
+      "title": "Canny Edge"
+    }
+  },
+  "603": {
+    "inputs": {
+      "images": [
+        "602",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "604": {
+    "inputs": {
+      "samples": [
+        "597",
+        0
+      ],
+      "vae": [
+        "593",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "605": {
+    "inputs": {
+      "images": [
+        "604",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "606": {
+    "inputs": {
+      "pixels": [
+        "661",
+        0
+      ],
+      "vae": [
+        "593",
+        2
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "610": {
+    "inputs": {
+      "Input": [
+        "632",
+        0
+      ],
+      "image2": [
+        "627",
+        0
+      ]
+    },
+    "class_type": "CR Image Input Switch",
+    "_meta": {
+      "title": "🔀 CR Image Input Switch"
+    }
+  },
+  "613": {
+    "inputs": {
+      "Input": [
+        "632",
+        0
+      ],
+      "image1": [
+        "360",
+        0
+      ],
+      "image2": [
+        "740",
+        0
+      ]
+    },
+    "class_type": "CR Image Input Switch",
+    "_meta": {
+      "title": "🔀 CR Image Input Switch"
+    }
+  },
+  "627": {
+    "inputs": {
+      "width": [
+        "7",
+        0
+      ],
+      "height": [
+        "7",
+        1
+      ],
+      "red": 80,
+      "green": 80,
+      "blue": 80
+    },
+    "class_type": "Image Blank",
+    "_meta": {
+      "title": "Image Blank"
+    }
+  },
+  "629": {
+    "inputs": {
+      "boolean": false
+    },
+    "class_type": "Logic Boolean Primitive",
+    "_meta": {
+      "title": "Use Background Image/使用背景图"
+    }
+  },
+  "632": {
+    "inputs": {
+      "value_if_true": 1,
+      "value_if_false": 2,
+      "boolean": [
+        "629",
+        0
+      ]
+    },
+    "class_type": "CR Set Value On Boolean",
+    "_meta": {
+      "title": "⚙️ CR Set Value On Boolean"
+    }
+  },
+  "649": {
+    "inputs": {
+      "boolean": false
+    },
+    "class_type": "Logic Boolean Primitive",
+    "_meta": {
+      "title": "Repaint/重绘"
+    }
+  },
+  "650": {
+    "inputs": {
+      "value_if_true": 1,
+      "value_if_false": 2,
+      "boolean": [
+        "649",
+        0
+      ]
+    },
+    "class_type": "CR Set Value On Boolean",
+    "_meta": {
+      "title": "⚙️ CR Set Value On Boolean"
+    }
+  },
+  "661": {
+    "inputs": {
+      "x": 0,
+      "y": 0,
+      "resize_source": false,
+      "destination": [
+        "627",
+        0
+      ],
+      "source": [
+        "360",
+        0
+      ],
+      "mask": [
+        "360",
+        1
+      ]
+    },
+    "class_type": "ImageCompositeMasked",
+    "_meta": {
+      "title": "ImageCompositeMasked"
+    }
+  },
+  "709": {
+    "inputs": {
+      "images": [
+        "661",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "740": {
+    "inputs": {
+      "x": 0,
+      "y": 0,
+      "resize_source": false,
+      "destination": [
+        "776",
+        0
+      ],
+      "source": [
+        "661",
+        0
+      ],
+      "mask": [
+        "333",
+        0
+      ]
+    },
+    "class_type": "ImageCompositeMasked",
+    "_meta": {
+      "title": "ImageCompositeMasked (Final image output)"
+    }
+  },
+  "741": {
+    "inputs": {
+      "images": [
+        "740",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "776": {
+    "inputs": {
+      "mask_threshold": 250,
+      "gaussblur_radius": 8,
+      "invert_mask": false,
+      "images": [
+        "604",
+        0
+      ],
+      "masks": [
+        "799",
+        0
+      ]
+    },
+    "class_type": "LamaRemover",
+    "_meta": {
+      "title": "Big lama Remover"
+    }
+  },
+  "779": {
+    "inputs": {
+      "images": [
+        "776",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "784": {
+    "inputs": {
+      "number": 50.095,
+      "min_value": 0,
+      "max_value": 100,
+      "step": 0.1
+    },
+    "class_type": "FloatSlider",
+    "_meta": {
+      "title": "x_percent"
+    }
+  },
+  "785": {
+    "inputs": {
+      "number": 50.236000000000004,
+      "min_value": 0,
+      "max_value": 100,
+      "step": 0.1
+    },
+    "class_type": "FloatSlider",
+    "_meta": {
+      "title": "y_percent"
+    }
+  },
+  "786": {
+    "inputs": {
+      "number": 1,
+      "min_value": 0,
+      "max_value": 1,
+      "step": 0.001
+    },
+    "class_type": "FloatSlider",
+    "_meta": {
+      "title": "scale"
+    }
+  },
+  "797": {
+    "inputs": {
+      "images": [
+        "360",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "799": {
+    "inputs": {
+      "expand": 10,
+      "incremental_expandrate": 0,
+      "tapered_corners": true,
+      "flip_input": false,
+      "blur_radius": 0,
+      "lerp_alpha": 1,
+      "decay_factor": 1,
+      "fill_holes": false,
+      "mask": [
+        "333",
+        0
+      ]
+    },
+    "class_type": "GrowMaskWithBlur",
+    "_meta": {
+      "title": "Grow Mask With Blur"
+    }
+  },
+  "800": {
+    "inputs": {
+      "mask": [
+        "799",
+        0
+      ]
+    },
+    "class_type": "LayerMask: MaskPreview",
+    "_meta": {
+      "title": "LayerMask: MaskPreview"
+    }
+  },
+  "827": {
+    "inputs": {
+      "model": "ZhengPeng7/BiRefNet",
+      "load_local_model": false,
+      "background_color_name": "transparency",
+      "device": "auto",
+      "image": [
+        "97",
+        0
+      ]
+    },
+    "class_type": "BiRefNet_Hugo",
+    "_meta": {
+      "title": "🔥BiRefNet"
+    }
+  },
+  "836": {
+    "inputs": {
+      "brightness": 1.2,
+      "contrast": 1,
+      "saturation": 1,
+      "image": [
+        "98",
+        0
+      ]
+    },
+    "class_type": "LayerColor: Brightness & Contrast",
+    "_meta": {
+      "title": "LayerColor: Brightness & Contrast"
+    }
+  }
+}

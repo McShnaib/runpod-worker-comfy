@@ -1,0 +1,8 @@
+{
+  "input": {
+    "prompt": "Photorealistic shot of the DILI strawberry juice bottle sitting on a rustic wooden crate in the middle of a sun-drenched strawberry field. Fresh, ripe red strawberries are visible on the green plants surrounding the crate. The background is softly blurred, and golden sunlight filters through the leaves, creating a warm and inviting atmosphere. The scene feels natural, vibrant, and wholesome.",
+    "height": 904,
+    "width": 1600,
+    "image_s3_url": "https://your-bucket.s3.region.amazonaws.com/example-image.jpg"
+  }
+}
