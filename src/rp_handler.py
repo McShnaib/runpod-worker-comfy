@@ -342,13 +342,41 @@ def process_output_images(outputs, job_id):
     # The path where ComfyUI stores the generated images
     COMFY_OUTPUT_PATH = os.environ.get("COMFY_OUTPUT_PATH", "/comfyui/output")
 
+    # DEBUG: Log the entire outputs structure
+    print(f"runpod-worker-comfy - DEBUG: Full outputs structure:")
+    print(f"runpod-worker-comfy - DEBUG: Outputs keys: {list(outputs.keys())}")
+    
+    # DEBUG: Log each output node that contains images
+    for node_id, node_output in outputs.items():
+        if "images" in node_output:
+            print(f"runpod-worker-comfy - DEBUG: Node {node_id} has {len(node_output['images'])} images")
+            for i, image in enumerate(node_output["images"]):
+                print(f"runpod-worker-comfy - DEBUG:   Image {i}: subfolder='{image.get('subfolder', 'N/A')}', filename='{image.get('filename', 'N/A')}'")
+        else:
+            print(f"runpod-worker-comfy - DEBUG: Node {node_id} has no images")
+
     # Look specifically for the final output node (740 - "ImageCompositeMasked (Final image output)")
     final_output_node = "740"
     
-    if final_output_node not in outputs or "images" not in outputs[final_output_node]:
+    if final_output_node not in outputs:
+        print(f"runpod-worker-comfy - DEBUG: Node {final_output_node} not found in outputs")
+        # Try to find any node with images as fallback
+        nodes_with_images = [node_id for node_id, node_output in outputs.items() if "images" in node_output]
+        if nodes_with_images:
+            print(f"runpod-worker-comfy - DEBUG: Found nodes with images: {nodes_with_images}")
+            # Use the first available node with images
+            final_output_node = nodes_with_images[0]
+            print(f"runpod-worker-comfy - DEBUG: Using fallback node {final_output_node}")
+        else:
+            return {
+                "status": "error",
+                "message": f"Final output node {final_output_node} not found in outputs, and no other nodes with images found",
+            }
+    
+    if "images" not in outputs[final_output_node]:
         return {
             "status": "error",
-            "message": f"Final output node {final_output_node} not found in outputs",
+            "message": f"Node {final_output_node} found but has no images",
         }
 
     # Get the first image from the final output node
