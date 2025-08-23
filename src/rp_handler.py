@@ -330,7 +330,7 @@ def process_output_images(outputs, job_id):
     The function works as follows:
     - It first determines the output path for the images from an environment variable,
       defaulting to "/comfyui/output" if not set.
-    - It then iterates through the outputs to find the filenames of the generated images.
+    - It then looks specifically for the final output node (740) which contains the final generated image.
     - After confirming the existence of the image in the output folder, it checks if the
       AWS S3 bucket is configured via the BUCKET_ENDPOINT_URL environment variable.
     - If AWS S3 is configured, it uploads the image to the bucket and returns the URL.
@@ -342,18 +342,29 @@ def process_output_images(outputs, job_id):
     # The path where ComfyUI stores the generated images
     COMFY_OUTPUT_PATH = os.environ.get("COMFY_OUTPUT_PATH", "/comfyui/output")
 
-    output_images = {}
+    # Look specifically for the final output node (740 - "ImageCompositeMasked (Final image output)")
+    final_output_node = "740"
+    
+    if final_output_node not in outputs or "images" not in outputs[final_output_node]:
+        return {
+            "status": "error",
+            "message": f"Final output node {final_output_node} not found in outputs",
+        }
 
-    for node_id, node_output in outputs.items():
-        if "images" in node_output:
-            for image in node_output["images"]:
-                output_images = os.path.join(image["subfolder"], image["filename"])
+    # Get the first image from the final output node
+    final_images = outputs[final_output_node]["images"]
+    if not final_images:
+        return {
+            "status": "error",
+            "message": f"No images found in final output node {final_output_node}",
+        }
+
+    # Construct the image path
+    image_info = final_images[0]  # Get the first image
+    image_path = os.path.join(image_info["subfolder"], image_info["filename"])
+    local_image_path = f"{COMFY_OUTPUT_PATH}/{image_path}"
 
     print(f"runpod-worker-comfy - image generation is done")
-
-    # expected image output folder
-    local_image_path = f"{COMFY_OUTPUT_PATH}/{output_images}"
-
     print(f"runpod-worker-comfy - {local_image_path}")
 
     # The image is in the output folder

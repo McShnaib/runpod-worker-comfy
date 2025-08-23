@@ -44,7 +44,6 @@ WORKDIR /
 # Add scripts
 ADD src/start.sh src/restore_snapshot.sh src/rp_handler.py test_input.json ./
 # Copy workflow file to src directory for the handler to access
-ADD SkimProdPhotoshoot-Serverless-workflow-API-format.json src/
 ADD SkimProdPhotoshoot-Serverless-workflow-API-format.json ./
 RUN chmod +x /start.sh /restore_snapshot.sh
 

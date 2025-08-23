@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "image": "31IeOTlng0S.jpg_BO30,255,255,255_UF900,850_SR1910,1000,0,C_QL100_.jpg"
+      "image": "dallah.jpg"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -10,8 +10,8 @@
   },
   "7": {
     "inputs": {
-      "width": 1600,
-      "height": 904,
+      "width": 1080,
+      "height": 1080,
       "upscale_factor": 1
     },
     "class_type": "CR Image Size",
@@ -45,7 +45,11 @@
       "interpolation": "lanczos",
       "method": "pad",
       "condition": "always",
-      "multiple_of": 0
+      "multiple_of": 0,
+      "image": [
+        "1",
+        0
+      ]
     },
     "class_type": "ImageResize+",
     "_meta": {
@@ -226,7 +230,7 @@
   },
   "597": {
     "inputs": {
-      "seed": 373441734090376,
+      "seed": 121064074021051,
       "steps": 6,
       "cfg": 2,
       "sampler_name": "dpmpp_sde",
@@ -578,7 +582,7 @@
   },
   "784": {
     "inputs": {
-      "number": 50.095,
+      "number": 49.394,
       "min_value": 0,
       "max_value": 100,
       "step": 0.1
@@ -590,7 +594,7 @@
   },
   "785": {
     "inputs": {
-      "number": 50.236000000000004,
+      "number": 48.846,
       "min_value": 0,
       "max_value": 100,
       "step": 0.1
