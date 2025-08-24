@@ -237,8 +237,11 @@ def process_output_images(outputs, job_id):
     for node_id, node_output in outputs.items():
         if "images" in node_output:
             for image in node_output["images"]:
-                output_images = os.path.join(image["subfolder"], image["filename"])
-
+                # Only process output images, not temp files
+                if image.get('type') == "output":
+                    output_images = os.path.join(image["subfolder"], image["filename"])
+                    break  # Use the first output image found
+                
     print(f"runpod-worker-comfy - image generation is done")
 
     # expected image output folder
